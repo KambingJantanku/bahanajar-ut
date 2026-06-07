@@ -38,13 +38,13 @@
 </head>
 <body class="min-h-screen" style="background:#000;color:#e5e5e5;">
   <div id="app">
-    <header class="border-b border-slate-800 sticky top-0 bg-slate-950/80 backdrop-blur z-40">
+    <header class="border-b border-neutral-800 sticky top-0 bg-black/80 backdrop-blur z-40">
       <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-white to-slate-400"></div>
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-white to-neutral-500"></div>
           <h1 class="text-lg font-semibold">Bahan Ajar UT</h1>
         </div>
-        <nav class="flex gap-1 p-1 bg-slate-900/60 rounded-lg border border-slate-800">
+        <nav class="flex gap-1 p-1 bg-neutral-900/60 rounded-lg border border-neutral-800">
           <button @click="tab='stok'" :class="['btn text-sm border border-transparent', tab==='stok' ? 'tab-active' : 'tab-idle']">Stok</button>
           <button @click="tab='tracking'" :class="['btn text-sm border border-transparent', tab==='tracking' ? 'tab-active' : 'tab-idle']">Tracking DO</button>
           <button @click="tab='order'" :class="['btn text-sm border border-transparent', tab==='order' ? 'tab-active' : 'tab-idle']">Order</button>
@@ -53,7 +53,7 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-6 py-8">
-      <div v-if="loading" class="text-center py-20 text-slate-500">Memuat data...</div>
+      <div v-if="loading" class="text-center py-20 text-neutral-500">Memuat data...</div>
       <div v-else>
         <section v-show="tab==='stok'">
           <stock-table :data="data" @update-stok="updateStok"></stock-table>
@@ -74,28 +74,28 @@
       <div class="flex items-center justify-between mb-6">
         <div>
           <h2 class="text-2xl font-semibold text-white">Manajemen Stok</h2>
-          <p class="text-sm text-slate-500 mt-1">Kelola bahan ajar di setiap UPBJJ</p>
+          <p class="text-sm text-neutral-500 mt-1">Kelola bahan ajar di setiap UPBJJ</p>
         </div>
         <button @click="openCreate" class="btn btn-primary">+ Tambah Stok</button>
       </div>
 
       <div class="card p-4 mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
         <div>
-          <label class="text-xs text-slate-500 block mb-1">UT-Daerah (UPBJJ)</label>
+          <label class="text-xs text-neutral-500 block mb-1">UT-Daerah (UPBJJ)</label>
           <select class="select" v-model="filterUpbjj">
             <option value="">Semua UPBJJ</option>
             <option v-for="u in data.upbjjList" :key="u" :value="u">{{ u }}</option>
           </select>
         </div>
         <div>
-          <label class="text-xs text-slate-500 block mb-1">Kategori MK</label>
+          <label class="text-xs text-neutral-500 block mb-1">Kategori MK</label>
           <select class="select" v-model="filterKategori" :disabled="!filterUpbjj">
             <option value="">{{ filterUpbjj ? 'Semua Kategori' : 'Pilih UPBJJ dulu' }}</option>
             <option v-for="k in data.kategoriList" :key="k" :value="k">{{ k }}</option>
           </select>
         </div>
         <div>
-          <label class="text-xs text-slate-500 block mb-1">Urutkan</label>
+          <label class="text-xs text-neutral-500 block mb-1">Urutkan</label>
           <select class="select" v-model="sortKey">
             <option value="judul">Judul</option>
             <option value="qty">Stok</option>
@@ -122,19 +122,19 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in filteredSorted" :key="item.kode" class="hover:bg-slate-900/50">
-              <td class="font-mono text-xs text-slate-400">{{ item.kode }}</td>
+            <tr v-for="item in filteredSorted" :key="item.kode" class="hover:bg-neutral-900/50">
+              <td class="font-mono text-xs text-neutral-400">{{ item.kode }}</td>
               <td class="text-white">{{ item.judul }}</td>
-              <td><span class="badge bg-slate-800 text-slate-300">{{ item.kategori }}</span></td>
+              <td><span class="badge bg-neutral-800 text-neutral-300">{{ item.kategori }}</span></td>
               <td>{{ item.upbjj }}</td>
-              <td class="text-slate-400">{{ item.lokasiRak }}</td>
+              <td class="text-neutral-400">{{ item.lokasiRak }}</td>
               <td>{{ item.harga | rupiah }}</td>
               <td>{{ item.qty | satuan }}</td>
               <td>
                 <span class="tooltip">
-                  <span v-if="item.qty === 0" class="badge bg-red-950 text-red-400">Kosong</span>
-                  <span v-else-if="item.qty < item.safety" class="badge bg-orange-950 text-orange-400">Menipis</span>
-                  <span v-else class="badge bg-emerald-950 text-emerald-400">Aman</span>
+                  <span v-if="item.qty === 0" class="badge badge-empty">Kosong</span>
+                  <span v-else-if="item.qty < item.safety" class="badge badge-warn">Menipis</span>
+                  <span v-else class="badge badge-ok">Aman</span>
                   <span class="tip" v-html="item.catatanHTML"></span>
                 </span>
               </td>
@@ -146,7 +146,7 @@
               </td>
             </tr>
             <tr v-if="!filteredSorted.length">
-              <td colspan="9" class="text-center py-8 text-slate-500">Tidak ada data</td>
+              <td colspan="9" class="text-center py-8 text-neutral-500">Tidak ada data</td>
             </tr>
           </tbody>
         </table>
@@ -157,34 +157,34 @@
         <div class="card p-6 w-full max-w-lg">
           <h3 class="text-lg font-semibold text-white mb-4">{{ editing ? 'Edit Stok' : 'Tambah Stok' }}</h3>
           <div class="space-y-3">
-            <div><label class="text-xs text-slate-500">Kode</label><input class="input" v-model="form.kode" :disabled="editing" @keyup.enter="saveStok"></div>
-            <div><label class="text-xs text-slate-500">Judul</label><input class="input" v-model="form.judul" @keyup.enter="saveStok"></div>
+            <div><label class="text-xs text-neutral-500">Kode</label><input class="input" v-model="form.kode" :disabled="editing" @keyup.enter="saveStok"></div>
+            <div><label class="text-xs text-neutral-500">Judul</label><input class="input" v-model="form.judul" @keyup.enter="saveStok"></div>
             <div class="grid grid-cols-2 gap-3">
-              <div><label class="text-xs text-slate-500">Kategori</label>
+              <div><label class="text-xs text-neutral-500">Kategori</label>
                 <select class="select" v-model="form.kategori">
                   <option v-for="k in data.kategoriList" :key="k" :value="k">{{ k }}</option>
                 </select>
               </div>
-              <div><label class="text-xs text-slate-500">UPBJJ</label>
+              <div><label class="text-xs text-neutral-500">UPBJJ</label>
                 <select class="select" v-model="form.upbjj">
                   <option v-for="u in data.upbjjList" :key="u" :value="u">{{ u }}</option>
                 </select>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <div><label class="text-xs text-slate-500">Rak</label><input class="input" v-model="form.lokasiRak" @keyup.enter="saveStok"></div>
-              <div><label class="text-xs text-slate-500">Harga</label><input class="input" type="number" v-model.number="form.harga" @keyup.enter="saveStok"></div>
+              <div><label class="text-xs text-neutral-500">Rak</label><input class="input" v-model="form.lokasiRak" @keyup.enter="saveStok"></div>
+              <div><label class="text-xs text-neutral-500">Harga</label><input class="input" type="number" v-model.number="form.harga" @keyup.enter="saveStok"></div>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <div><label class="text-xs text-slate-500">Qty</label><input class="input" type="number" v-model.number="form.qty" @keyup.enter="saveStok"></div>
-              <div><label class="text-xs text-slate-500">Safety</label><input class="input" type="number" v-model.number="form.safety" @keyup.enter="saveStok"></div>
+              <div><label class="text-xs text-neutral-500">Qty</label><input class="input" type="number" v-model.number="form.qty" @keyup.enter="saveStok"></div>
+              <div><label class="text-xs text-neutral-500">Safety</label><input class="input" type="number" v-model.number="form.safety" @keyup.enter="saveStok"></div>
             </div>
           </div>
           <div class="flex justify-end gap-2 mt-6">
             <button @click="showForm=false" class="btn btn-ghost">Batal</button>
             <button @click="saveStok" class="btn btn-primary">Simpan</button>
           </div>
-          <p class="text-xs text-slate-500 mt-3">Tip: tekan Enter untuk simpan langsung.</p>
+          <p class="text-xs text-neutral-500 mt-3">Tip: tekan Enter untuk simpan langsung.</p>
         </div>
       </div>
 
@@ -192,7 +192,7 @@
       <div v-if="deleteTarget" class="modal-overlay" @click.self="deleteTarget=null">
         <div class="card p-6 w-full max-w-sm">
           <h3 class="text-lg font-semibold text-white mb-2">Hapus stok?</h3>
-          <p class="text-sm text-slate-400 mb-6">{{ deleteTarget.kode }} — {{ deleteTarget.judul }}</p>
+          <p class="text-sm text-neutral-400 mb-6">{{ deleteTarget.kode }} — {{ deleteTarget.judul }}</p>
           <div class="flex justify-end gap-2">
             <button @click="deleteTarget=null" class="btn btn-ghost">Batal</button>
             <button @click="doDelete" class="btn btn-danger">Hapus</button>
@@ -206,11 +206,11 @@
     <div>
       <div class="mb-6">
         <h2 class="text-2xl font-semibold text-white">Tracking Delivery Order</h2>
-        <p class="text-sm text-slate-500 mt-1">Lacak pengiriman bahan ajar ke mahasiswa</p>
+        <p class="text-sm text-neutral-500 mt-1">Lacak pengiriman bahan ajar ke mahasiswa</p>
       </div>
 
       <div class="card p-4 mb-6">
-        <label class="text-xs text-slate-500 block mb-1">Cari Nomor DO atau NIM (Enter untuk cari, Esc untuk reset)</label>
+        <label class="text-xs text-neutral-500 block mb-1">Cari Nomor DO atau NIM (Enter untuk cari, Esc untuk reset)</label>
         <input class="input" v-model="search" @keyup.enter="execSearch" @keyup.esc="resetSearch" placeholder="Mis: DO2025-0001 atau 123456789">
       </div>
 
@@ -218,26 +218,26 @@
         <div v-for="item in filteredList" :key="item.no" class="card p-5">
           <div class="flex items-start justify-between mb-3">
             <div>
-              <div class="font-mono text-sm text-slate-400">{{ item.no }}</div>
-              <div class="text-lg font-semibold text-white">{{ item.data.nama }} <span class="text-sm text-slate-500 font-normal">({{ item.data.nim }})</span></div>
+              <div class="font-mono text-sm text-neutral-400">{{ item.no }}</div>
+              <div class="text-lg font-semibold text-white">{{ item.data.nama }} <span class="text-sm text-neutral-500 font-normal">({{ item.data.nim }})</span></div>
             </div>
-            <span class="badge bg-blue-950 text-blue-400">{{ item.data.status }}</span>
+            <span class="badge badge">{{ item.data.status }}</span>
           </div>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-4">
-            <div><div class="text-xs text-slate-500">Ekspedisi</div><div>{{ item.data.ekspedisi }}</div></div>
-            <div><div class="text-xs text-slate-500">Tgl Kirim</div><div>{{ item.data.tanggalKirim }}</div></div>
-            <div><div class="text-xs text-slate-500">Paket</div><div>{{ item.data.paket }}</div></div>
-            <div><div class="text-xs text-slate-500">Total</div><div>{{ item.data.total | rupiah }}</div></div>
+            <div><div class="text-xs text-neutral-500">Ekspedisi</div><div>{{ item.data.ekspedisi }}</div></div>
+            <div><div class="text-xs text-neutral-500">Tgl Kirim</div><div>{{ item.data.tanggalKirim }}</div></div>
+            <div><div class="text-xs text-neutral-500">Paket</div><div>{{ item.data.paket }}</div></div>
+            <div><div class="text-xs text-neutral-500">Total</div><div>{{ item.data.total | rupiah }}</div></div>
           </div>
-          <div class="border-t border-slate-800 pt-3">
-            <div class="text-xs text-slate-500 mb-2">Perjalanan</div>
+          <div class="border-t border-neutral-800 pt-3">
+            <div class="text-xs text-neutral-500 mb-2">Perjalanan</div>
             <div v-for="(p,i) in item.data.perjalanan" :key="i" class="text-sm flex gap-3 mb-1">
-              <span class="text-slate-500 font-mono text-xs">{{ p.waktu }}</span>
+              <span class="text-neutral-500 font-mono text-xs">{{ p.waktu }}</span>
               <span>{{ p.keterangan }}</span>
             </div>
           </div>
         </div>
-        <div v-if="!filteredList.length" class="card p-8 text-center text-slate-500">Tidak ada hasil</div>
+        <div v-if="!filteredList.length" class="card p-8 text-center text-neutral-500">Tidak ada hasil</div>
       </div>
     </div>
   </template>
@@ -246,44 +246,44 @@
     <div>
       <div class="mb-6">
         <h2 class="text-2xl font-semibold text-white">Buat Delivery Order Baru</h2>
-        <p class="text-sm text-slate-500 mt-1">Nomor DO digenerate otomatis</p>
+        <p class="text-sm text-neutral-500 mt-1">Nomor DO digenerate otomatis</p>
       </div>
 
       <div class="card p-6 max-w-2xl">
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="text-xs text-slate-500 block mb-1">Nomor DO (auto)</label>
+              <label class="text-xs text-neutral-500 block mb-1">Nomor DO (auto)</label>
               <input class="input font-mono" :value="nomorDO" readonly>
             </div>
             <div>
-              <label class="text-xs text-slate-500 block mb-1">Tanggal Kirim</label>
+              <label class="text-xs text-neutral-500 block mb-1">Tanggal Kirim</label>
               <input class="input" :value="tanggalKirim" readonly>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-xs text-slate-500 block mb-1">NIM</label><input class="input" v-model="form.nim"></div>
-            <div><label class="text-xs text-slate-500 block mb-1">Nama Mahasiswa</label><input class="input" v-model="form.nama"></div>
+            <div><label class="text-xs text-neutral-500 block mb-1">NIM</label><input class="input" v-model="form.nim"></div>
+            <div><label class="text-xs text-neutral-500 block mb-1">Nama Mahasiswa</label><input class="input" v-model="form.nama"></div>
           </div>
           <div>
-            <label class="text-xs text-slate-500 block mb-1">Paket</label>
+            <label class="text-xs text-neutral-500 block mb-1">Paket</label>
             <select class="select" v-model="form.paketKode">
               <option value="">— Pilih Paket —</option>
               <option v-for="p in data.paket" :key="p.kode" :value="p.kode">{{ p.nama }} ({{ p.harga | rupiah }})</option>
             </select>
           </div>
-          <div v-if="selectedPaket" class="card p-4 bg-slate-900/50">
-            <div class="text-xs text-slate-500 mb-2">Isi Paket</div>
+          <div v-if="selectedPaket" class="card p-4 bg-neutral-900/50">
+            <div class="text-xs text-neutral-500 mb-2">Isi Paket</div>
             <div v-for="kode in selectedPaket.isi" :key="kode" class="flex justify-between text-sm py-1">
-              <span class="font-mono text-slate-400">{{ kode }}</span>
+              <span class="font-mono text-neutral-400">{{ kode }}</span>
               <span>{{ judulOf(kode) }}</span>
             </div>
-            <div class="border-t border-slate-800 mt-3 pt-3 flex justify-between font-semibold">
+            <div class="border-t border-neutral-800 mt-3 pt-3 flex justify-between font-semibold">
               <span>Total</span><span>{{ selectedPaket.harga | rupiah }}</span>
             </div>
           </div>
           <div>
-            <label class="text-xs text-slate-500 block mb-1">Metode Pengiriman</label>
+            <label class="text-xs text-neutral-500 block mb-1">Metode Pengiriman</label>
             <select class="select" v-model="form.pengiriman">
               <option v-for="p in data.pengirimanList" :key="p.kode" :value="p.kode">{{ p.nama }}</option>
             </select>
