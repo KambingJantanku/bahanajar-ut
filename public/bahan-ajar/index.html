@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bahan Ajar UT — SPA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .tab-active { background: rgb(15 23 42); color: #fff; border-color: rgb(51 65 85); }
+    .tab-idle { color: rgb(148 163 184); }
+    .tab-idle:hover { color: #fff; background: rgb(15 23 42 / 0.6); }
+    .card { background: rgb(15 23 42 / 0.7); border: 1px solid rgb(30 41 59); border-radius: 12px; }
+    .input, .select { background: rgb(2 6 23); border: 1px solid rgb(30 41 59); color: #e2e8f0; border-radius: 8px; padding: 8px 12px; width: 100%; }
+    .input:focus, .select:focus { outline: none; border-color: rgb(100 116 139); }
+    .btn { padding: 8px 14px; border-radius: 8px; font-weight: 500; transition: all .15s; }
+    .btn-primary { background: #fff; color: #0f172a; }
+    .btn-primary:hover { background: #e2e8f0; }
+    .btn-ghost { background: rgb(15 23 42); color: #e2e8f0; border: 1px solid rgb(30 41 59); }
+    .btn-ghost:hover { background: rgb(30 41 59); }
+    .btn-danger { background: rgb(127 29 29); color: #fecaca; }
+    .btn-danger:hover { background: rgb(153 27 27); }
+    .badge { padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+    .tooltip { position: relative; cursor: help; }
+    .tooltip .tip { visibility: hidden; opacity: 0; position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background: #0f172a; color: #e2e8f0; padding: 8px 12px; border-radius: 6px; border: 1px solid rgb(51 65 85); font-size: 12px; white-space: nowrap; z-index: 50; transition: opacity .15s; }
+    .tooltip:hover .tip { visibility: visible; opacity: 1; }
+    table { border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgb(30 41 59); }
+    th { color: rgb(148 163 184); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .modal-overlay { position: fixed; inset: 0; background: rgb(0 0 0 / 0.7); display: flex; align-items: center; justify-content: center; z-index: 100; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen">
+  <div id="app">
+    <header class="border-b border-slate-800 sticky top-0 bg-slate-950/80 backdrop-blur z-40">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-white to-slate-400"></div>
+          <h1 class="text-lg font-semibold">Bahan Ajar UT</h1>
+        </div>
+        <nav class="flex gap-1 p-1 bg-slate-900/60 rounded-lg border border-slate-800">
+          <button @click="tab='stok'" :class="['btn text-sm border border-transparent', tab==='stok' ? 'tab-active' : 'tab-idle']">Stok</button>
+          <button @click="tab='tracking'" :class="['btn text-sm border border-transparent', tab==='tracking' ? 'tab-active' : 'tab-idle']">Tracking DO</button>
+          <button @click="tab='order'" :class="['btn text-sm border border-transparent', tab==='order' ? 'tab-active' : 'tab-idle']">Order</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+      <div v-if="loading" class="text-center py-20 text-slate-500">Memuat data...</div>
+      <div v-else>
+        <section v-show="tab==='stok'">
+          <stock-table :data="data" @update-stok="updateStok"></stock-table>
+        </section>
+        <section v-show="tab==='tracking'">
+          <do-tracking :data="data"></do-tracking>
+        </section>
+        <section v-show="tab==='order'">
+          <order-form :data="data"></order-form>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- TEMPLATES -->
+  <template id="tpl-stock-table">
+    <div>
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-semibold text-white">Manajemen Stok</h2>
+          <p class="text-sm text-slate-500 mt-1">Kelola bahan ajar di setiap UPBJJ</p>
+        </div>
+        <button @click="openCreate" class="btn btn-primary">+ Tambah Stok</button>
+      </div>
+
+      <div class="card p-4 mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">UT-Daerah (UPBJJ)</label>
+          <select class="select" v-model="filterUpbjj">
+            <option value="">Semua UPBJJ</option>
+            <option v-for="u in data.upbjjList" :key="u" :value="u">{{ u }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">Kategori MK</label>
+          <select class="select" v-model="filterKategori" :disabled="!filterUpbjj">
+            <option value="">{{ filterUpbjj ? 'Semua Kategori' : 'Pilih UPBJJ dulu' }}</option>
+            <option v-for="k in data.kategoriList" :key="k" :value="k">{{ k }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">Urutkan</label>
+          <select class="select" v-model="sortKey">
+            <option value="judul">Judul</option>
+            <option value="qty">Stok</option>
+            <option value="harga">Harga</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button @click="sortAsc=!sortAsc" class="btn btn-ghost w-full">{{ sortAsc ? 'Asc ↑' : 'Desc ↓' }}</button>
+        </div>
+        <div class="flex items-end">
+          <label class="flex items-center gap-2 text-sm cursor-pointer">
+            <input type="checkbox" v-model="reorderOnly" class="rounded">
+            <span>Perlu reorder</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr>
+              <th>Kode</th><th>Judul</th><th>Kategori</th><th>UPBJJ</th><th>Rak</th>
+              <th>Harga</th><th>Qty</th><th>Status</th><th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in filteredSorted" :key="item.kode" class="hover:bg-slate-900/50">
+              <td class="font-mono text-xs text-slate-400">{{ item.kode }}</td>
+              <td class="text-white">{{ item.judul }}</td>
+              <td><span class="badge bg-slate-800 text-slate-300">{{ item.kategori }}</span></td>
+              <td>{{ item.upbjj }}</td>
+              <td class="text-slate-400">{{ item.lokasiRak }}</td>
+              <td>{{ item.harga | rupiah }}</td>
+              <td>{{ item.qty | satuan }}</td>
+              <td>
+                <span class="tooltip">
+                  <span v-if="item.qty === 0" class="badge bg-red-950 text-red-400">Kosong</span>
+                  <span v-else-if="item.qty < item.safety" class="badge bg-orange-950 text-orange-400">Menipis</span>
+                  <span v-else class="badge bg-emerald-950 text-emerald-400">Aman</span>
+                  <span class="tip" v-html="item.catatanHTML"></span>
+                </span>
+              </td>
+              <td>
+                <div class="flex gap-2">
+                  <button @click="openEdit(item)" class="btn btn-ghost text-xs">Edit</button>
+                  <button @click="confirmDelete(item)" class="btn btn-danger text-xs">Hapus</button>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="!filteredSorted.length">
+              <td colspan="9" class="text-center py-8 text-slate-500">Tidak ada data</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Form Modal -->
+      <div v-if="showForm" class="modal-overlay" @click.self="showForm=false">
+        <div class="card p-6 w-full max-w-lg">
+          <h3 class="text-lg font-semibold text-white mb-4">{{ editing ? 'Edit Stok' : 'Tambah Stok' }}</h3>
+          <div class="space-y-3">
+            <div><label class="text-xs text-slate-500">Kode</label><input class="input" v-model="form.kode" :disabled="editing" @keyup.enter="saveStok"></div>
+            <div><label class="text-xs text-slate-500">Judul</label><input class="input" v-model="form.judul" @keyup.enter="saveStok"></div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="text-xs text-slate-500">Kategori</label>
+                <select class="select" v-model="form.kategori">
+                  <option v-for="k in data.kategoriList" :key="k" :value="k">{{ k }}</option>
+                </select>
+              </div>
+              <div><label class="text-xs text-slate-500">UPBJJ</label>
+                <select class="select" v-model="form.upbjj">
+                  <option v-for="u in data.upbjjList" :key="u" :value="u">{{ u }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="text-xs text-slate-500">Rak</label><input class="input" v-model="form.lokasiRak" @keyup.enter="saveStok"></div>
+              <div><label class="text-xs text-slate-500">Harga</label><input class="input" type="number" v-model.number="form.harga" @keyup.enter="saveStok"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="text-xs text-slate-500">Qty</label><input class="input" type="number" v-model.number="form.qty" @keyup.enter="saveStok"></div>
+              <div><label class="text-xs text-slate-500">Safety</label><input class="input" type="number" v-model.number="form.safety" @keyup.enter="saveStok"></div>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 mt-6">
+            <button @click="showForm=false" class="btn btn-ghost">Batal</button>
+            <button @click="saveStok" class="btn btn-primary">Simpan</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-3">Tip: tekan Enter untuk simpan langsung.</p>
+        </div>
+      </div>
+
+      <!-- Delete Confirm -->
+      <div v-if="deleteTarget" class="modal-overlay" @click.self="deleteTarget=null">
+        <div class="card p-6 w-full max-w-sm">
+          <h3 class="text-lg font-semibold text-white mb-2">Hapus stok?</h3>
+          <p class="text-sm text-slate-400 mb-6">{{ deleteTarget.kode }} — {{ deleteTarget.judul }}</p>
+          <div class="flex justify-end gap-2">
+            <button @click="deleteTarget=null" class="btn btn-ghost">Batal</button>
+            <button @click="doDelete" class="btn btn-danger">Hapus</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-do-tracking">
+    <div>
+      <div class="mb-6">
+        <h2 class="text-2xl font-semibold text-white">Tracking Delivery Order</h2>
+        <p class="text-sm text-slate-500 mt-1">Lacak pengiriman bahan ajar ke mahasiswa</p>
+      </div>
+
+      <div class="card p-4 mb-6">
+        <label class="text-xs text-slate-500 block mb-1">Cari Nomor DO atau NIM (Enter untuk cari, Esc untuk reset)</label>
+        <input class="input" v-model="search" @keyup.enter="execSearch" @keyup.esc="resetSearch" placeholder="Mis: DO2025-0001 atau 123456789">
+      </div>
+
+      <div class="grid gap-4">
+        <div v-for="item in filteredList" :key="item.no" class="card p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <div class="font-mono text-sm text-slate-400">{{ item.no }}</div>
+              <div class="text-lg font-semibold text-white">{{ item.data.nama }} <span class="text-sm text-slate-500 font-normal">({{ item.data.nim }})</span></div>
+            </div>
+            <span class="badge bg-blue-950 text-blue-400">{{ item.data.status }}</span>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-4">
+            <div><div class="text-xs text-slate-500">Ekspedisi</div><div>{{ item.data.ekspedisi }}</div></div>
+            <div><div class="text-xs text-slate-500">Tgl Kirim</div><div>{{ item.data.tanggalKirim }}</div></div>
+            <div><div class="text-xs text-slate-500">Paket</div><div>{{ item.data.paket }}</div></div>
+            <div><div class="text-xs text-slate-500">Total</div><div>{{ item.data.total | rupiah }}</div></div>
+          </div>
+          <div class="border-t border-slate-800 pt-3">
+            <div class="text-xs text-slate-500 mb-2">Perjalanan</div>
+            <div v-for="(p,i) in item.data.perjalanan" :key="i" class="text-sm flex gap-3 mb-1">
+              <span class="text-slate-500 font-mono text-xs">{{ p.waktu }}</span>
+              <span>{{ p.keterangan }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-if="!filteredList.length" class="card p-8 text-center text-slate-500">Tidak ada hasil</div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-order-form">
+    <div>
+      <div class="mb-6">
+        <h2 class="text-2xl font-semibold text-white">Buat Delivery Order Baru</h2>
+        <p class="text-sm text-slate-500 mt-1">Nomor DO digenerate otomatis</p>
+      </div>
+
+      <div class="card p-6 max-w-2xl">
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-slate-500 block mb-1">Nomor DO (auto)</label>
+              <input class="input font-mono" :value="nomorDO" readonly>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 block mb-1">Tanggal Kirim</label>
+              <input class="input" :value="tanggalKirim" readonly>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-xs text-slate-500 block mb-1">NIM</label><input class="input" v-model="form.nim"></div>
+            <div><label class="text-xs text-slate-500 block mb-1">Nama Mahasiswa</label><input class="input" v-model="form.nama"></div>
+          </div>
+          <div>
+            <label class="text-xs text-slate-500 block mb-1">Paket</label>
+            <select class="select" v-model="form.paketKode">
+              <option value="">— Pilih Paket —</option>
+              <option v-for="p in data.paket" :key="p.kode" :value="p.kode">{{ p.nama }} ({{ p.harga | rupiah }})</option>
+            </select>
+          </div>
+          <div v-if="selectedPaket" class="card p-4 bg-slate-900/50">
+            <div class="text-xs text-slate-500 mb-2">Isi Paket</div>
+            <div v-for="kode in selectedPaket.isi" :key="kode" class="flex justify-between text-sm py-1">
+              <span class="font-mono text-slate-400">{{ kode }}</span>
+              <span>{{ judulOf(kode) }}</span>
+            </div>
+            <div class="border-t border-slate-800 mt-3 pt-3 flex justify-between font-semibold">
+              <span>Total</span><span>{{ selectedPaket.harga | rupiah }}</span>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-slate-500 block mb-1">Metode Pengiriman</label>
+            <select class="select" v-model="form.pengiriman">
+              <option v-for="p in data.pengirimanList" :key="p.kode" :value="p.kode">{{ p.nama }}</option>
+            </select>
+          </div>
+          <button @click="submit" class="btn btn-primary w-full">Buat Order</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="./js/services/api.js"></script>
+  <script src="./js/components/stock-table.js"></script>
+  <script src="./js/components/do-tracking.js"></script>
+  <script src="./js/components/order-form.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
